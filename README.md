@@ -2,9 +2,9 @@
 
 ## What You'll Build
 
-Give your travel advisors a magic button: Click it, get a personalized hotel search link for their client. That's it.
+Give your agents a magic button: Click it, get a personalized hotel search link for their client. That's it.
 
-**Your advisor clicks "Find Hotels" → You call one endpoint → They get a link → Done.**
+**Your agent clicks "Find Hotels" → You call one endpoint → They get a link → Done.**
 
 The link opens Outfit with hotels pre-matched to their client's preferences. No forms, no configuration, no complexity.
 
@@ -18,7 +18,7 @@ We'll send you an API key. That's all you need to get started.
 
 ### Step 2: Call the search endpoint
 
-When your advisor wants to find hotels for a client, call this:
+When your agent wants to find hotels for a client, call this:
 
 ```javascript
 const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
@@ -28,7 +28,7 @@ const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
     'X-Outfit-Api-Key': 'your-api-key'
   },
   body: JSON.stringify({
-    partner_agent_id: "advisor-123",        // Your advisor's ID
+    partner_agent_id: "agent-123",        // Your agent's ID
     partner_client_id: "client-456",        // Your client's ID
     search: {
       query: "Romantic hotels in Paris for anniversary, March 15-20"
@@ -43,13 +43,13 @@ const result = await response.json();
 
 ```javascript
 if (result.status === 'success') {
-  // Give this URL to your advisor - they click it and see personalized results
+  // Give this URL to your agent - they click it and see personalized results for their clients
   const link = result.data.deeplink_url;
   // → https://joinoutfit.com/search/abc123
 }
 ```
 
-**That's it.** Three steps. Your advisors can now generate personalized hotel searches for their clients.
+**That's it.** Three steps. Your agents can now generate personalized hotel searches for their clients.
 
 ---
 
@@ -57,7 +57,7 @@ if (result.status === 'success') {
 
 **The API tells you exactly what to do.** First-time setup happens automatically through error messages:
 
-### First time an advisor searches:
+### First time an agent searches:
 ```javascript
 // Error response:
 {
@@ -77,8 +77,8 @@ await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
     'X-Outfit-Api-Key': 'your-api-key'
   },
   body: JSON.stringify({
-    partner_agent_id: "advisor-123",
-    email: "advisor@yourcompany.com",
+    partner_agent_id: "agent-123",
+    email: "agent123@yourcompany.com",
     first_name: "Jane",
     last_name: "Smith"
   })
@@ -107,7 +107,7 @@ await fetch('https://api.joinoutfit.com/v1/partner/verify-customer', {
     'X-Outfit-Api-Key': 'your-api-key'
   },
   body: JSON.stringify({
-    partner_agent_id: "advisor-123",
+    partner_agent_id: "agent-123",
     partner_client_id: "client-456",
     client_info: {
       first_name: "John",
@@ -133,14 +133,14 @@ Copy-paste this into your project:
 /**
  * Generate a personalized hotel search link for a client
  *
- * @param {string} advisorId - Your advisor's unique ID
+ * @param {string} agentId - Your agent's unique ID
  * @param {string} clientId - Your client's unique ID
  * @param {object} searchQuery - What the client is looking for
- * @param {object} advisorInfo - Only needed for first-time advisor setup
+ * @param {object} agentInfo - Only needed for first-time agent setup
  * @param {object} clientInfo - Only needed for first-time client setup
- * @returns {Promise<string>} - Deeplink URL for the advisor to click
+ * @returns {Promise<string>} - Deeplink URL for the agent to click
  */
-async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo = {}, clientInfo = {}) {
+async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}, clientInfo = {}) {
   const search = async () => {
     const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
       method: 'POST',
@@ -149,7 +149,7 @@ async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo 
         'X-Outfit-Api-Key': process.env.OUTFIT_API_KEY
       },
       body: JSON.stringify({
-        partner_agent_id: advisorId,
+        partner_agent_id: agentId,
         partner_client_id: clientId,
         search: { query: searchQuery.text },
         traveler_info: searchQuery.context  // Optional: "Celebrating anniversary, loves boutique hotels"
@@ -161,7 +161,7 @@ async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo 
   // Try to create the search
   let result = await search();
 
-  // First time advisor? Link their account
+  // First time agent? Link their account
   if (result.error?.code === 'AGENT_NOT_LINKED') {
     await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
       method: 'POST',
@@ -170,10 +170,10 @@ async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo 
         'X-Outfit-Api-Key': process.env.OUTFIT_API_KEY
       },
       body: JSON.stringify({
-        partner_agent_id: advisorId,
-        email: advisorInfo.email,
-        first_name: advisorInfo.firstName,
-        last_name: advisorInfo.lastName
+        partner_agent_id: agentId,
+        email: agentInfo.email,
+        first_name: agentInfo.firstName,
+        last_name: agentInfo.lastName
       })
     });
     result = await search(); // Retry
@@ -188,7 +188,7 @@ async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo 
         'X-Outfit-Api-Key': process.env.OUTFIT_API_KEY
       },
       body: JSON.stringify({
-        partner_agent_id: advisorId,
+        partner_agent_id: agentId,
         partner_client_id: clientId,
         client_info: {
           first_name: clientInfo.firstName,
@@ -210,7 +210,7 @@ async function getHotelSearchLink(advisorId, clientId, searchQuery, advisorInfo 
 
 // Usage:
 const link = await getHotelSearchLink(
-  'advisor-123',
+  'agent-123',
   'client-456',
   {
     text: 'Romantic hotels in Paris, March 15-20',
@@ -220,7 +220,7 @@ const link = await getHotelSearchLink(
   { firstName: 'John', lastName: 'Doe', email: 'john@example.com' }
 );
 
-// Show link to advisor → https://joinoutfit.com/search/abc123
+// Show link to agent → https://joinoutfit.com/search/abc123
 ```
 
 **That's your entire integration.** 70 lines of code.
@@ -241,15 +241,15 @@ We'll provide your API key during onboarding. Keep it secret, keep it safe.
 ## Frequently Asked Questions
 
 <details>
-<summary><b>What if I have 50 advisors to onboard?</b></summary>
+<summary><b>What if I have 50 agents to onboard?</b></summary>
 
 Send us a CSV with their emails and names. We'll link/create all their accounts in 1-2 days and send you a report. Then you can use the API for day-to-day searches.
 
 **CSV Format:**
 ```csv
 partner_agent_id,email,first_name,last_name
-advisor-001,jane@agency.com,Jane,Smith
-advisor-002,john@agency.com,John,Doe
+agent-001,jane@agency.com,Jane,Smith
+agent-002,john@agency.com,John,Doe
 ```
 
 Email your integration contact to get started.
@@ -287,7 +287,7 @@ Nope! Email is optional. First name and last name are enough.
 <details>
 <summary><b>What if there are multiple clients with the same name?</b></summary>
 
-We'll return a `disambiguation_required` response with candidates. Show the list to your advisor, they pick the right one, then you call the resolve endpoint. See the [disambiguation section](#handling-disambiguation) for details.
+We'll return a `disambiguation_required` response with candidates. Show the list to your agent, they pick the right one, then you call the resolve endpoint. See the [disambiguation section](#handling-disambiguation) for details.
 
 This is rare - we auto-link when there's a clear match.
 
@@ -300,7 +300,7 @@ Not yet - Release 1 only returns the deeplink URL.
 
 **Coming in Release 2** (quick follow): We'll add a `properties` array to search results with hotel data (names, prices, ratings, images) so you can build your own UI if you want.
 
-For now, the deeplink gives advisors a great experience with personalized results.
+For now, the deeplink gives agents a great experience with personalized results.
 
 </details>
 
@@ -340,7 +340,7 @@ Generate a personalized hotel search deeplink.
 **Request:**
 ```json
 {
-  "partner_agent_id": "advisor-123",
+  "partner_agent_id": "agent-123",
   "partner_client_id": "client-456",
   "search": {
     "query": "Luxury hotels in Paris, March 15-20"
@@ -369,7 +369,7 @@ Generate a personalized hotel search deeplink.
 }
 ```
 
-**Response (Error - First Time Advisor):**
+**Response (Error - First Time Agent):**
 ```json
 {
   "status": "error",
@@ -396,13 +396,13 @@ Generate a personalized hotel search deeplink.
 <details>
 <summary><b>All Error Codes</b></summary>
 
-| Code | When it happens | What to do |
-|------|----------------|------------|
-| `AGENT_NOT_LINKED` | First time advisor | Call `/v1/partner/create-agent` |
-| `CLIENT_NOT_LINKED` | First time client | Call `/v1/partner/verify-customer` |
+| Code | When it happens              | What to do |
+|------|------------------------------|------------|
+| `AGENT_NOT_LINKED` | First time agent             | Call `/v1/partner/create-agent` |
+| `CLIENT_NOT_LINKED` | First time client            | Call `/v1/partner/verify-customer` |
 | `INVALID_DATES` | Bad check-in/check-out dates | Fix the dates |
-| `INVALID_API_KEY` | Wrong/missing API key | Check your API key |
-| `INTERNAL_ERROR` | Server error | Retry in a few seconds |
+| `INVALID_API_KEY` | Wrong/missing API key        | Check your API key |
+| `INTERNAL_ERROR` | Server error                 | Retry in a few seconds |
 
 </details>
 
@@ -410,13 +410,13 @@ Generate a personalized hotel search deeplink.
 
 ### POST /v1/partner/create-agent
 
-Link an advisor's account. Only called when you get `AGENT_NOT_LINKED` error.
+Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 
 **Request:**
 ```json
 {
-  "partner_agent_id": "advisor-123",
-  "email": "advisor@agency.com",
+  "partner_agent_id": "agent-123",
+  "email": "agent123@agency.com",
   "first_name": "Jane",
   "last_name": "Smith"
 }
@@ -427,7 +427,7 @@ Link an advisor's account. Only called when you get `AGENT_NOT_LINKED` error.
 {
   "status": "success",
   "data": {
-    "partner_agent_id": "advisor-123",
+    "partner_agent_id": "agent-123",
     "linked": true,
     "existing_account": true
   }
@@ -449,7 +449,7 @@ Link a client profile. Only called when you get `CLIENT_NOT_LINKED` error.
 **Request:**
 ```json
 {
-  "partner_agent_id": "advisor-123",
+  "partner_agent_id": "agent-123",
   "partner_client_id": "client-456",
   "client_info": {
     "first_name": "John",
@@ -512,7 +512,7 @@ Sometimes there are multiple clients with similar names. We'll ask which one is 
 }
 ```
 
-**Show these to your advisor and ask:** "Which John Doe is this?"
+**Show these to your agent and ask:** "Which John Doe is this?"
 
 **Then call:**
 ```javascript
