@@ -22,18 +22,18 @@ When your agent wants to find hotels for a client, call this:
 
 ```javascript
 const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Outfit-Api-Key': 'your-api-key'
-  },
-  body: JSON.stringify({
-    partner_agent_id: "agent-123",        // Your agent's ID
-    partner_client_id: "client-456",        // Your client's ID
-    search: {
-      query: "Romantic hotels in Paris for anniversary, March 15-20"
-    }
-  })
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Outfit-Api-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+        partner_agent_id: "agent-123",        // Your agent's ID
+        partner_client_id: "client-456",        // Your client's ID
+        search: {
+            query: "Romantic hotels in Paris for anniversary, March 15-20"
+        }
+    })
 });
 
 const result = await response.json();
@@ -43,9 +43,9 @@ const result = await response.json();
 
 ```javascript
 if (result.status === 'success') {
-  // Give this URL to your agent - they click it and see personalized results for their clients
-  const link = result.data.deeplink_url;
-  // → https://joinoutfit.com/search/abc123
+    // Give this URL to your agent - they click it and see personalized results for their clients
+    const link = result.data.deeplink_url;
+    // → https://joinoutfit.com/search/abc123
 }
 ```
 
@@ -59,29 +59,28 @@ if (result.status === 'success') {
 
 ### First time an agent searches:
 ```javascript
-// Error response:
+// Error response (HTTP 400):
 {
-  "status": "error",
-  "error": {
+    "status": 400,
+    "error": {
     "code": "AGENT_NOT_LINKED",
-    "message": "Agent must be created before searching.",
-    "action_required": "create_agent"
-  }
+        "message": "Agent must be created before searching."
+}
 }
 
 // Fix it once (creates/links their account):
 await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-Outfit-Api-Key': 'your-api-key'
-  },
-  body: JSON.stringify({
-    partner_agent_id: "agent-123",
-    email: "agent123@yourcompany.com",
-    first_name: "Jane",
-    last_name: "Smith"
-  })
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-Outfit-Api-Key': 'your-api-key'
+    },
+    body: JSON.stringify({
+        partner_agent_id: "agent-123",
+        email: "agent123@yourcompany.com",
+        first_name: "Jane",
+        last_name: "Smith"
+    })
 });
 
 // Now retry the search - it works!
@@ -89,17 +88,16 @@ await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
 
 ### First time searching for a client:
 ```javascript
-// Error response:
+// Error response (HTTP 400):
 {
-  "status": "error",
+  "status": 400,
   "error": {
     "code": "CLIENT_NOT_LINKED",
-    "message": "Client must be verified before searching.",
-    "action_required": "verify_customer"
+    "message": "Client must be verified before searching."
   }
 }
 
-// Fix it once (creates/links client profile):
+// Fix it once (creates/links client account):
 await fetch('https://api.joinoutfit.com/v1/partner/verify-customer', {
   method: 'POST',
   headers: {
@@ -179,7 +177,7 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
     result = await search(); // Retry
   }
 
-  // First time client? Link their profile
+  // First time client? Link their account
   if (result.error?.code === 'CLIENT_NOT_LINKED') {
     await fetch('https://api.joinoutfit.com/v1/partner/verify-customer', {
       method: 'POST',
@@ -201,7 +199,7 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
     result = await search(); // Retry
   }
 
-  if (result.status === 'success') {
+  if (result.data) {
     return result.data.deeplink_url;
   }
 
@@ -349,10 +347,9 @@ Generate a personalized hotel search deeplink.
 }
 ```
 
-**Response (Success):**
+**Response (Success - HTTP 200):**
 ```json
 {
-  "status": "success",
   "data": {
     "deeplink_url": "https://joinoutfit.com/search/abc123",
     "search_session_id": "abc123",
@@ -365,30 +362,30 @@ Generate a personalized hotel search deeplink.
         "guests": 2
       }
     }
-  }
+  },
+  "status": 200,
+  "messages": []
 }
 ```
 
-**Response (Error - First Time Agent):**
+**Response (Error - First Time Agent - HTTP 400):**
 ```json
 {
-  "status": "error",
+  "status": 400,
   "error": {
     "code": "AGENT_NOT_LINKED",
-    "message": "Agent must be created before searching.",
-    "action_required": "create_agent"
+    "message": "Agent must be created before searching."
   }
 }
 ```
 
-**Response (Error - First Time Client):**
+**Response (Error - First Time Client - HTTP 400):**
 ```json
 {
-  "status": "error",
+  "status": 400,
   "error": {
     "code": "CLIENT_NOT_LINKED",
-    "message": "Client must be verified before searching.",
-    "action_required": "verify_customer"
+    "message": "Client must be verified before searching."
   }
 }
 ```
@@ -422,15 +419,16 @@ Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 }
 ```
 
-**Response:**
+**Response (HTTP 200):**
 ```json
 {
-  "status": "success",
   "data": {
     "partner_agent_id": "agent-123",
     "linked": true,
     "existing_account": true
-  }
+  },
+  "status": 200,
+  "messages": []
 }
 ```
 
@@ -444,7 +442,7 @@ Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 
 ### POST /v1/partner/verify-customer
 
-Link a client profile. Only called when you get `CLIENT_NOT_LINKED` error.
+Link a client account. Only called when you get `CLIENT_NOT_LINKED` error.
 
 **Request:**
 ```json
@@ -460,22 +458,23 @@ Link a client profile. Only called when you get `CLIENT_NOT_LINKED` error.
 }
 ```
 
-**Response (Success - Auto-Linked):**
+**Response (Success - Auto-Linked - HTTP 200):**
 ```json
 {
-  "status": "success",
   "data": {
     "partner_client_id": "client-456",
     "linked": true,
     "action": "created",
     "confidence": 1.0
-  }
+  },
+  "status": 200,
+  "messages": []
 }
 ```
 
 **What happens:**
-- If we find exact match (name + email) → Links to existing profile
-- If no match → Creates new profile
+- If we find exact match (name + email) → Links to existing account
+- If no match → Creates new account linked to this agent
 - If multiple possible matches → Returns `disambiguation_required` (see below)
 
 **After this:** Retry your search request - it will work.
@@ -486,27 +485,37 @@ Link a client profile. Only called when you get `CLIENT_NOT_LINKED` error.
 
 Sometimes there are multiple clients with similar names. We'll ask which one is correct.
 
-**Response (Disambiguation Required):**
+**Response (Disambiguation Required - HTTP 200):**
 ```json
 {
-  "status": "disambiguation_required",
-  "partner_client_id": "client-456",
-  "candidates": [
+  "data": {
+    "partner_client_id": "client-456",
+    "disambiguation_required": true,
+    "candidates": [
+      {
+        "outfit_user_id": "uuid-1",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john@example.com",
+        "last_search_at": "2024-03-01T14:30:00Z",
+        "match_confidence": 0.85
+      },
+      {
+        "outfit_user_id": "uuid-2",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": null,
+        "last_search_at": null,
+        "match_confidence": 0.72
+      }
+    ]
+  },
+  "status": 200,
+  "messages": [
     {
-      "outfit_user_id": "uuid-1",
-      "first_name": "John",
-      "last_name": "Doe",
-      "email": "john@example.com",
-      "last_search_at": "2024-03-01T14:30:00Z",
-      "match_confidence": 0.85
-    },
-    {
-      "outfit_user_id": "uuid-2",
-      "first_name": "John",
-      "last_name": "Doe",
-      "email": null,
-      "last_search_at": null,
-      "match_confidence": 0.72
+      "code": "DISAMBIGUATION_REQUIRED",
+      "details": "Multiple possible matches found. Please select the correct client or create a new account.",
+      "type": "MESSAGE"
     }
   ]
 }
@@ -550,16 +559,23 @@ await fetch('https://api.joinoutfit.com/v1/partner/resolve-customer', {
 
 ---
 
-## Coming in Release 2
+## Upcoming in our road mep
 
 We're adding hotel property data to search results so you can build your own UI if you want:
 
 ```json
 {
-  "status": "success",
   "data": {
     "deeplink_url": "https://joinoutfit.com/search/abc123",
+    "search_session_id": "abc123",
     "search_results": {
+      "query": "Luxury hotels in Paris, March 15-20",
+      "criteria": {
+        "destination": "Paris, France",
+        "check_in": "2024-03-15",
+        "check_out": "2024-03-20",
+        "guests": 2
+      },
       "properties": [
         {
           "property_id": "prop-123",
@@ -576,12 +592,14 @@ We're adding hotel property data to search results so you can build your own UI 
         }
       ]
     }
-  }
+  },
+  "status": 200,
+  "messages": []
 }
 ```
 
 <details>
-<summary><b>Property Fields (Release 2)</b></summary>
+<summary><b>Property Fields (Future)</b></summary>
 
 - **property_id**: Unique identifier
 - **name**: Hotel name
@@ -599,7 +617,7 @@ We're adding hotel property data to search results so you can build your own UI 
 
 </details>
 
-**Timeline:** Quick follow after Release 1. We'll email when it's ready.
+**Timeline:** We'll email when it's ready.
 
 ---
 
