@@ -298,7 +298,7 @@ This is rare - we auto-link when there's a clear match.
 
 Not yet - Release 1 only returns the deeplink URL.
 
-**Coming in Release 2** (quick follow): We'll add a `properties` array to search results with hotel data (names, prices, ratings, images) so you can build your own UI if you want.
+**Coming in Future roadmap**: We'll add a `properties` array to search results with hotel data (names, prices, ratings, images) so you can build your own UI if you want.
 
 For now, the deeplink gives agents a great experience with personalized results.
 
