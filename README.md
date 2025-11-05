@@ -21,7 +21,7 @@ We'll send you an API key. That's all you need to get started.
 When your agent wants to find hotels for a client, call this:
 
 ```javascript
-const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
+const response = await fetch('https://api.joinoutfit.com/v1/agency/search', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
@@ -65,11 +65,11 @@ if (result.status === 'success') {
     "error": {
     "code": "AGENT_NOT_LINKED",
         "message": "Agent must be created before searching."
-    }
+}
 }
 
 // Fix it once (creates/links their account):
-await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
+await fetch('https://api.joinoutfit.com/v1/agency/create-agent', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
@@ -98,7 +98,7 @@ await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
 }
 
 // Fix it once (creates/links client account):
-await fetch('https://api.joinoutfit.com/v1/partner/verify-customer', {
+await fetch('https://api.joinoutfit.com/v1/agency/verify-customer', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ Copy-paste this into your project:
  */
 async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}, clientInfo = {}) {
   const search = async () => {
-    const response = await fetch('https://api.joinoutfit.com/v1/partner/search', {
+    const response = await fetch('https://api.joinoutfit.com/v1/agency/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
 
   // First time agent? Link their account
   if (result.error?.code === 'AGENT_NOT_LINKED') {
-    await fetch('https://api.joinoutfit.com/v1/partner/create-agent', {
+    await fetch('https://api.joinoutfit.com/v1/agency/create-agent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
 
   // First time client? Link their account
   if (result.error?.code === 'CLIENT_NOT_LINKED') {
-    await fetch('https://api.joinoutfit.com/v1/partner/verify-customer', {
+    await fetch('https://api.joinoutfit.com/v1/agency/verify-customer', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -331,7 +331,7 @@ We'll give you a test API key. Create test searches, click the links, see the re
 
 ## API Reference
 
-### POST /v1/partner/search
+### POST /v1/agency/search
 
 Generate a personalized hotel search deeplink.
 
@@ -395,8 +395,8 @@ Generate a personalized hotel search deeplink.
 
 | Code | When it happens              | What to do |
 |------|------------------------------|------------|
-| `AGENT_NOT_LINKED` | First time agent             | Call `/v1/partner/create-agent` |
-| `CLIENT_NOT_LINKED` | First time client            | Call `/v1/partner/verify-customer` |
+| `AGENT_NOT_LINKED` | First time agent             | Call `/v1/agency/create-agent` |
+| `CLIENT_NOT_LINKED` | First time client            | Call `/v1/agency/verify-customer` |
 | `INVALID_DATES` | Bad check-in/check-out dates | Fix the dates |
 | `INVALID_API_KEY` | Wrong/missing API key        | Check your API key |
 | `INTERNAL_ERROR` | Server error                 | Retry in a few seconds |
@@ -405,7 +405,7 @@ Generate a personalized hotel search deeplink.
 
 ---
 
-### POST /v1/partner/create-agent
+### POST /v1/agency/create-agent
 
 Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 
@@ -440,7 +440,7 @@ Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 
 ---
 
-### POST /v1/partner/verify-customer
+### POST /v1/agency/verify-customer
 
 Link a client account. Only called when you get `CLIENT_NOT_LINKED` error.
 
@@ -526,7 +526,7 @@ Sometimes there are multiple clients with similar names. We'll ask which one is 
 **Then call:**
 ```javascript
 // If they pick option 1:
-await fetch('https://api.joinoutfit.com/v1/partner/resolve-customer', {
+await fetch('https://api.joinoutfit.com/v1/agency/resolve-customer', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -540,7 +540,7 @@ await fetch('https://api.joinoutfit.com/v1/partner/resolve-customer', {
 });
 
 // OR if it's a new client:
-await fetch('https://api.joinoutfit.com/v1/partner/resolve-customer', {
+await fetch('https://api.joinoutfit.com/v1/agency/resolve-customer', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
