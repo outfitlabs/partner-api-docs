@@ -65,7 +65,7 @@ if (result.status === 'success') {
     "error": {
     "code": "AGENT_NOT_LINKED",
         "message": "Agent must be created before searching."
-}
+    }
 }
 
 // Fix it once (creates/links their account):
@@ -350,6 +350,7 @@ Generate a personalized hotel search deeplink.
 **Response (Success - HTTP 200):**
 ```json
 {
+  "status": 200,
   "data": {
     "deeplink_url": "https://joinoutfit.com/search/abc123",
     "search_session_id": "abc123",
@@ -363,7 +364,6 @@ Generate a personalized hotel search deeplink.
       }
     }
   },
-  "status": 200,
   "messages": []
 }
 ```
@@ -422,12 +422,12 @@ Link an agent's account. Only called when you get `AGENT_NOT_LINKED` error.
 **Response (HTTP 200):**
 ```json
 {
+  "status": 200,
   "data": {
     "partner_agent_id": "agent-123",
     "linked": true,
     "existing_account": true
   },
-  "status": 200,
   "messages": []
 }
 ```
@@ -461,13 +461,13 @@ Link a client account. Only called when you get `CLIENT_NOT_LINKED` error.
 **Response (Success - Auto-Linked - HTTP 200):**
 ```json
 {
+  "status": 200,
   "data": {
     "partner_client_id": "client-456",
     "linked": true,
     "action": "created",
     "confidence": 1.0
   },
-  "status": 200,
   "messages": []
 }
 ```
@@ -485,9 +485,10 @@ Link a client account. Only called when you get `CLIENT_NOT_LINKED` error.
 
 Sometimes there are multiple clients with similar names. We'll ask which one is correct.
 
-**Response (Disambiguation Required - HTTP 200):**
+**Response (Disambiguation Required - HTTP 409):**
 ```json
 {
+  "status": 409,
   "data": {
     "partner_client_id": "client-456",
     "disambiguation_required": true,
@@ -510,7 +511,6 @@ Sometimes there are multiple clients with similar names. We'll ask which one is 
       }
     ]
   },
-  "status": 200,
   "messages": [
     {
       "code": "DISAMBIGUATION_REQUIRED",
@@ -565,6 +565,7 @@ We're adding hotel property data to search results so you can build your own UI 
 
 ```json
 {
+  "status": 200,
   "data": {
     "deeplink_url": "https://joinoutfit.com/search/abc123",
     "search_session_id": "abc123",
@@ -593,7 +594,6 @@ We're adding hotel property data to search results so you can build your own UI 
       ]
     }
   },
-  "status": 200,
   "messages": []
 }
 ```
