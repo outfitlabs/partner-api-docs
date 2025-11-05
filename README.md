@@ -559,7 +559,7 @@ await fetch('https://api.joinoutfit.com/v1/partner/resolve-customer', {
 
 ---
 
-## Upcoming in our road mep
+## Upcoming in our roadmap
 
 We're adding hotel property data to search results so you can build your own UI if you want:
 
