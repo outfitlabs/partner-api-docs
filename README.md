@@ -15,7 +15,7 @@ The link opens Outfit with hotels pre-matched to their client's preferences. No 
 ### Step 1: Get your API key
 
 We'll send you an API key. That's all you need to get started.
-
+er
 ### Step 2: Call the search endpoint
 
 When your agent wants to find hotels for a client, call this:
@@ -324,6 +324,31 @@ We also use it to generate/enrich the client's biography for future searches.
 Use the development API: `https://api.outfit-qa.com`
 
 We'll give you a test API key. Create test searches, click the links, see the results.
+
+**Pre-seeded Test IDs** - Skip the linking flow and test immediately:
+
+Agent IDs (already "linked"):
+- `test-agent-001`
+- `test-agent-002`
+- `test-agent-003`
+
+Client IDs (already "linked"):
+- `test-client-001`
+- `test-client-002`
+- `test-client-003`
+
+Example test request:
+```javascript
+{
+  "partner_agent_id": "test-agent-001",
+  "partner_client_id": "test-client-001",
+  "search": {
+    "query": "Hotels in Paris"
+  }
+}
+```
+
+This will work immediately without calling `/create-agent` or `/verify-customer` first.
 
 </details>
 
