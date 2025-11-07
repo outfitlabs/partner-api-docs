@@ -239,6 +239,14 @@ We'll provide your API key during onboarding. Keep it secret, keep it safe.
 ## Frequently Asked Questions
 
 <details>
+<summary><b>Do you have a Postman Collection?</b></summary>
+
+Yes. Download it [here](Outfit_Agency_API.postman_collection.json).
+</details>
+
+
+
+<details>
 <summary><b>What if I have 50 agents to onboard?</b></summary>
 
 Send us a CSV with their emails and names. We'll link/create all their accounts in 1-2 days and send you a report. Then you can use the API for day-to-day searches.

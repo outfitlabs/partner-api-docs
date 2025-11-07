@@ -1,0 +1,1022 @@
+{
+  "info": {
+    "name": "Outfit Agency API",
+    "description": "API endpoints for travel agency partners to integrate with Outfit's platform. This collection includes endpoints for agent management, customer verification, and search functionality.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "value",
+        "value": "{{agencyApiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "key",
+        "value": "X-Outfit-Api-Key",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "agencyApiKey",
+      "value": "your-agency-api-key-here",
+      "type": "string"
+    },
+    {
+      "key": "agentId",
+      "value": "test-agent-001",
+      "type": "string"
+    },
+    {
+      "key": "clientId",
+      "value": "test-client-001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create Agent",
+      "item": [
+        {
+          "name": "Create Agent - Success",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has correct structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData.data).to.have.property('partner_agent_id');",
+                  "    pm.expect(jsonData.data).to.have.property('linked');",
+                  "    pm.expect(jsonData.data.linked).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Agent is created successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.partnerAgentId).to.eql(pm.collectionVariables.get('agentId'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"email\": \"agent@travelagency.com\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/create-agent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "create-agent"
+              ]
+            },
+            "description": "Creates or links a travel agent to the Outfit platform. This endpoint is idempotent - calling it multiple times with the same partnerAgentId will return the existing agent."
+          },
+          "response": [
+            {
+              "name": "Success - New Agent",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"email\": \"agent@travelagency.com\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/create-agent",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "create-agent"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_agent_id\": \"agent-001\",\n    \"linked\": true,\n    \"existing_account\": false\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            },
+            {
+              "name": "Success - Existing Agent (Idempotent)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"email\": \"agent@travelagency.com\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Smith\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/create-agent",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "create-agent"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_agent_id\": \"agent-001\",\n    \"linked\": true,\n    \"existing_account\": true\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Agent management endpoints. Agents must be created before they can verify customers or perform searches."
+    },
+    {
+      "name": "2. Verify Customer",
+      "item": [
+        {
+          "name": "Verify Customer - Auto Create",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Customer is verified/created\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('linked');",
+                  "    pm.expect(jsonData.data.linked).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('action');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"partner_client_id\": \"{{clientId}}\",\n  \"client_info\": {\n    \"first_name\": \"Sarah\",\n    \"last_name\": \"Johnson\",\n    \"email\": \"sarah.johnson@example.com\",\n    \"bio_blurb\": \"Loves beach vacations and adventure travel\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/verify-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "verify-customer"
+              ]
+            },
+            "description": "Verifies and links a customer to the Outfit platform. If the customer is unambiguous, they will be automatically linked or created. If multiple matches are found, disambiguation will be required."
+          },
+          "response": [
+            {
+              "name": "Success - Auto Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"partner_client_id\": \"client-001\",\n  \"client_info\": {\n    \"first_name\": \"Sarah\",\n    \"last_name\": \"Johnson\",\n    \"email\": \"sarah.johnson@example.com\",\n    \"bio_blurb\": \"Loves beach vacations\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/verify-customer",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "verify-customer"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_client_id\": \"client-001\",\n    \"linked\": true,\n    \"action\": \"created\",\n    \"confidence\": 1.0\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Customer - Disambiguation Required",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 409 Conflict\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test(\"Disambiguation response structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('disambiguation_required');",
+                  "    pm.expect(jsonData.data.disambiguationRequired).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('candidates');",
+                  "    pm.expect(jsonData.data.candidates).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Save first candidate ID for resolve-customer request",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data.candidates && jsonData.data.candidates.length > 0) {",
+                  "    pm.collectionVariables.set('candidateUserId', jsonData.data.candidates[0].outfitUserId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"partner_client_id\": \"client-002\",\n  \"client_info\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": null\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/verify-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "verify-customer"
+              ]
+            },
+            "description": "Example showing disambiguation when multiple customer matches are found. This happens when using 'John Doe' in the mock implementation."
+          },
+          "response": [
+            {
+              "name": "Conflict - Disambiguation Required",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"partner_client_id\": \"client-002\",\n  \"client_info\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/verify-customer",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "verify-customer"
+                  ]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_client_id\": \"client-002\",\n    \"disambiguation_required\": true,\n    \"candidates\": [\n      {\n        \"outfit_user_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"email\": \"john@example.com\",\n        \"last_search_at\": \"2024-03-01T14:30:00Z\",\n        \"match_confidence\": 0.85\n      },\n      {\n        \"outfit_user_id\": \"6ba7b810-9dad-11d1-80b4-00c04fd430c8\",\n        \"first_name\": \"John\",\n        \"last_name\": \"Doe\",\n        \"email\": null,\n        \"last_search_at\": null,\n        \"match_confidence\": 0.72\n      }\n    ]\n  },\n  \"status\": 409,\n  \"messages\": [\n    {\n      \"code\": \"DISAMBIGUATION_REQUIRED\",\n      \"details\": \"Multiple possible matches found. Please select the correct client or create a new account.\",\n      \"type\": \"MESSAGE\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Customer - Agent Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message for agent not linked\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.have.property('code', 'AGENT_NOT_LINKED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"non-existent-agent\",\n  \"partner_client_id\": \"client-003\",\n  \"client_info\": {\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\",\n    \"email\": \"test@example.com\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/verify-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "verify-customer"
+              ]
+            },
+            "description": "Error case when trying to verify a customer with a non-existent agent ID."
+          },
+          "response": [
+            {
+              "name": "Error - Agent Not Linked",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"non-existent-agent\",\n  \"partner_client_id\": \"client-003\",\n  \"client_info\": {\n    \"first_name\": \"Test\",\n    \"last_name\": \"User\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/verify-customer",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "verify-customer"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 400,\n  \"error\": {\n    \"message\": \"Agent must be created before searching.\",\n    \"code\": \"AGENT_NOT_LINKED\"\n  }\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Customer verification endpoints. Used to link agency customers to Outfit accounts or create new accounts."
+    },
+    {
+      "name": "3. Resolve Customer",
+      "item": [
+        {
+          "name": "Resolve Customer - Link Existing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Customer linked successfully\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.action).to.eql('linked');",
+                  "    pm.expect(jsonData.data.linked).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_client_id\": \"client-002\",\n  \"action\": \"link\",\n  \"outfit_user_id\": \"{{candidateUserId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/resolve-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "resolve-customer"
+              ]
+            },
+            "description": "Resolves customer disambiguation by linking to an existing Outfit user. Use this after receiving a disambiguation response from verify-customer."
+          },
+          "response": [
+            {
+              "name": "Success - Linked",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_client_id\": \"client-002\",\n  \"action\": \"link\",\n  \"outfit_user_id\": \"550e8400-e29b-41d4-a716-446655440000\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/resolve-customer",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "resolve-customer"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_client_id\": \"client-002\",\n    \"outfit_user_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"linked\": true,\n    \"action\": \"linked\"\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resolve Customer - Create New",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"New customer created\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.action).to.eql('created');",
+                  "    pm.expect(jsonData.data.linked).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('outfit_user_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_client_id\": \"client-003\",\n  \"action\": \"create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/resolve-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "resolve-customer"
+              ]
+            },
+            "description": "Resolves customer disambiguation by creating a new Outfit user account."
+          },
+          "response": [
+            {
+              "name": "Success - Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_client_id\": \"client-003\",\n  \"action\": \"create\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/resolve-customer",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "resolve-customer"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"partner_client_id\": \"client-003\",\n    \"outfit_user_id\": \"7c9e6679-7425-40de-944b-e07fc1f90ae7\",\n    \"linked\": true,\n    \"action\": \"created\"\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Customer resolution endpoints. Used to resolve disambiguation by either linking to an existing Outfit user or creating a new one."
+    },
+    {
+      "name": "4. Search",
+      "item": [
+        {
+          "name": "Search - Natural Language Query",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Search response structure\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property('deeplink_url');",
+                  "    pm.expect(jsonData.data).to.have.property('search_session_id');",
+                  "    pm.expect(jsonData.data).to.have.property('search_results');",
+                  "});",
+                  "",
+                  "pm.test(\"Deeplink URL is valid\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.deeplinkUrl).to.match(/^https?:\\/\\/.+\\/search\\/.+$/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"partner_client_id\": \"{{clientId}}\",\n  \"search\": {\n    \"query\": \"I want to visit Paris in March for 5 nights with my partner\"\n  },\n  \"traveler_info\": \"Celebrating 10th anniversary, interested in romantic experiences and fine dining\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "search"
+              ]
+            },
+            "description": "Performs a travel search using natural language query. Returns a deeplink URL that can be shared with the customer to view and book results."
+          },
+          "response": [
+            {
+              "name": "Success - Natural Language",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"partner_client_id\": \"client-001\",\n  \"search\": {\n    \"query\": \"I want to visit Paris in March for 5 nights\"\n  },\n  \"traveler_info\": \"Celebrating anniversary\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/search",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "search"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"deeplink_url\": \"https://joinoutfit.com/search/abc123def456\",\n    \"search_session_id\": \"abc123def456\",\n    \"search_results\": {\n      \"query\": \"I want to visit Paris in March for 5 nights\",\n      \"criteria\": {\n        \"destination\": \"Paris, France\",\n        \"check_in\": \"2024-03-15\",\n        \"check_out\": \"2024-03-20\",\n        \"guests\": 2,\n        \"budget\": null\n      },\n      \"properties\": null\n    }\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search - Structured Criteria",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Search uses provided criteria\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data.searchResults.criteria.destination).to.eql('Rome, Italy');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"partner_client_id\": \"{{clientId}}\",\n  \"search\": {\n    \"query\": \"Looking for hotels in Rome\",\n    \"criteria\": {\n      \"destination\": \"Rome, Italy\",\n      \"check_in\": \"2024-06-01\",\n      \"check_out\": \"2024-06-07\",\n      \"guests\": 4,\n      \"budget\": 3000\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "search"
+              ]
+            },
+            "description": "Performs a search with structured criteria. The criteria object takes precedence over natural language extraction."
+          },
+          "response": [
+            {
+              "name": "Success - Structured",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"partner_client_id\": \"client-001\",\n  \"search\": {\n    \"query\": \"Looking for hotels in Rome\",\n    \"criteria\": {\n      \"destination\": \"Rome, Italy\",\n      \"check_in\": \"2024-06-01\",\n      \"check_out\": \"2024-06-07\",\n      \"guests\": 4,\n      \"budget\": 3000\n    }\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/search",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "search"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"data\": {\n    \"deeplink_url\": \"https://joinoutfit.com/search/xyz789abc123\",\n    \"search_session_id\": \"xyz789abc123\",\n    \"search_results\": {\n      \"query\": \"Looking for hotels in Rome\",\n      \"criteria\": {\n        \"destination\": \"Rome, Italy\",\n        \"check_in\": \"2024-06-01\",\n        \"check_out\": \"2024-06-07\",\n        \"guests\": 4,\n        \"budget\": 3000\n      },\n      \"properties\": null\n    }\n  },\n  \"status\": 200,\n  \"messages\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search - Client Not Verified",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test(\"Error for client not linked\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.error).to.have.property('code', 'CLIENT_NOT_LINKED');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"{{agentId}}\",\n  \"partner_client_id\": \"unverified-client\",\n  \"search\": {\n    \"query\": \"Hotels in Tokyo\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "search"
+              ]
+            },
+            "description": "Error case when trying to search for a customer that hasn't been verified yet."
+          },
+          "response": [
+            {
+              "name": "Error - Client Not Verified",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"partner_agent_id\": \"agent-001\",\n  \"partner_client_id\": \"unverified-client\",\n  \"search\": {\n    \"query\": \"Hotels in Tokyo\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/v1/agency/search",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "agency",
+                    "search"
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 400,\n  \"error\": {\n    \"message\": \"Client must be verified before searching.\",\n    \"code\": \"CLIENT_NOT_LINKED\"\n  }\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Search endpoints. Allows agents to perform searches on behalf of verified customers."
+    },
+    {
+      "name": "Complete Workflow Example",
+      "item": [
+        {
+          "name": "Step 1 - Create Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"workflow-agent-001\",\n  \"email\": \"workflow.agent@agency.com\",\n  \"first_name\": \"Workflow\",\n  \"last_name\": \"Agent\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/create-agent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "create-agent"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 2 - Verify Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"workflow-agent-001\",\n  \"partner_client_id\": \"workflow-client-001\",\n  \"client_info\": {\n    \"first_name\": \"Emma\",\n    \"last_name\": \"Wilson\",\n    \"email\": \"emma.wilson@example.com\",\n    \"bio_blurb\": \"Frequent traveler, prefers luxury accommodations\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/verify-customer",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "verify-customer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Step 3 - Perform Search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"partner_agent_id\": \"workflow-agent-001\",\n  \"partner_client_id\": \"workflow-client-001\",\n  \"search\": {\n    \"query\": \"Luxury resort in Bali for honeymoon in July\",\n    \"criteria\": {\n      \"destination\": \"Bali, Indonesia\",\n      \"check_in\": \"2024-07-15\",\n      \"check_out\": \"2024-07-22\",\n      \"guests\": 2,\n      \"budget\": 5000\n    }\n  },\n  \"traveler_info\": \"Honeymoon trip, interested in spa and beach activities\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/agency/search",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "agency",
+                "search"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Complete workflow example showing the typical integration flow: create agent \u2192 verify customer \u2192 perform search."
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level pre-request script",
+          "// You can add common logic here that runs before every request"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Collection-level test script",
+          "// Common assertions that apply to all requests",
+          "",
+          "pm.test(\"Response time is acceptable\", function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "pm.test(\"Response has correct content type\", function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ]
+}
