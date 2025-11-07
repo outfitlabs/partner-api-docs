@@ -170,8 +170,8 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
       body: JSON.stringify({
         partner_agent_id: agentId,
         email: agentInfo.email,
-        first_name: agentInfo.firstName,
-        last_name: agentInfo.lastName
+        first_name: agentInfo.first_name,
+        last_name: agentInfo.last_name
       })
     });
     result = await search(); // Retry
@@ -189,8 +189,8 @@ async function getHotelSearchLink(agentId, clientId, searchQuery, agentInfo = {}
         partner_agent_id: agentId,
         partner_client_id: clientId,
         client_info: {
-          first_name: clientInfo.firstName,
-          last_name: clientInfo.lastName,
+          first_name: clientInfo.first_name,
+          last_name: clientInfo.last_name,
           email: clientInfo.email,
           bio_blurb: clientInfo.preferences  // Optional: "Luxury traveler, prefers boutique hotels"
         }
@@ -214,8 +214,8 @@ const link = await getHotelSearchLink(
     text: 'Romantic hotels in Paris, March 15-20',
     context: 'Anniversary trip, loves historic neighborhoods'
   },
-  { email: 'jane@agency.com', firstName: 'Jane', lastName: 'Smith' },
-  { firstName: 'John', lastName: 'Doe', email: 'john@example.com' }
+  { email: 'jane@agency.com', first_name: 'Jane', last_name: 'Smith' },
+  { first_name: 'John', last_name: 'Doe', email: 'john@example.com' }
 );
 
 // Show link to agent → https://joinoutfit.com/search/abc123
